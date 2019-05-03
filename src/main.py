@@ -100,7 +100,7 @@ df_excel = pd.DataFrame(lista, columns = ['Keyword', 'Year'])
 df = pd.DataFrame(keyword_year, columns = ['Keyword', 'Year']) 
 df = df.append(df_excel)
 
-###### Get All Keyords
+###### Get All Keyords 
 
 teste = df.groupby(['Keyword']).size()
 teste = teste.reset_index()
