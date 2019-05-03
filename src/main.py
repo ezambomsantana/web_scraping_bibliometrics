@@ -9,7 +9,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 url_ecc = "http://papers.cumincad.org/cgi-bin/works/Search?search=&paint=on&f%3A1=year&e%3A1=%3E%3D+x&v%3A1=1998&f%3A2=year&e%3A2=%3C%3D+x&v%3A2=2018&f%3A3=source&e%3A3=%3D~+m%2Fx%2Fi&v%3A3=eCAADe&f%3A4=&e%3A4=&v%3A4=&f%3A5=&e%3A5=&v%3A5=&grouping=and&days=&sort=DEFAULT&sort1=&sort2=&sort3=&max=3000&fields=id&fields=authors&fields=year&fields=title&fields=source&fields=summary&fields=WOS&fields=keywords&fields=series&fields=type&fields=email&fields=more&fields=content&fields=fullText&fields=references&fields=seeAlso&_form=AdvancedSearchForm&_formname=&format=LONG&frames=NONE"
-url_sigradi = "http://papers.cumincad.org/cgi-bin/works/Search?search=&paint=on&f%3A1=year&e%3A1=%3E%3D+x&v%3A1=1998&f%3A2=year&e%3A2=%3C%3D+x&v%3A2=2018&f%3A3=source&e%3A3=%3D~+m%2Fx%2Fi&v%3A3=sigradi&f%3A4=&e%3A4=&v%3A4=&f%3A5=&e%3A5=&v%3A5=&grouping=and&days=&sort=DEFAULT&sort1=&sort2=&sort3=&max=3000&fields=authors&fields=year&fields=title&fields=source&fields=keywords&fields=references&_form=AdvancedSearchForm&_formname=&format=LONG&frames=NONE"
+url_sigradi = "http://papers.cumincad.org/cgi-bin/works/Search?search=&paint=on&f%3A1=year&e%3A1=%3E%3D+x&v%3A1=1998&f%3A2=year&e%3A2=%3C%3D+x&v%3A2=2018&f%3A3=source&e%3A3=%3D~+m%2Fx%2Fi&v%3A3=sigradi&f%3A4=&e%3A4=&v%3A4=&f%3A5=&e%3A5=&v%3A5=&grouping=and&days=&sort=DEFAULT&sort1=&sort2=&sort3=&max=30000&fields=authors&fields=year&fields=title&fields=source&fields=keywords&fields=references&_form=AdvancedSearchForm&_formname=&format=LONG&frames=NONE"
 page = requests.get(url_sigradi)
 
 soup = BeautifulSoup(page.text, 'html.parser')
@@ -72,6 +72,7 @@ for artist_name in items:
 
 
 
+###### get number of papers by year
 
 df = pd.DataFrame(title_year, columns = ['Title', 'Year']) 
 
@@ -83,6 +84,8 @@ teste.columns = ['Year', 'Count']
 #plt.show()
 
 
+###### Read 2018 sigradi data
+
 df_excel = pd.read_excel('/home/eduardo/Downloads/SIGraDi2018_metadata.xls', sheetname='Papers Ordered by Tracks')
 df_excel = df_excel[['keywords']]
 
@@ -93,25 +96,40 @@ for s in df_excel['keywords']:
         if k != '':
             lista.append([k.strip().lower(), "2018"])   
 
-print(lista)
-
 df_excel = pd.DataFrame(lista, columns = ['Keyword', 'Year']) 
 df = pd.DataFrame(keyword_year, columns = ['Keyword', 'Year']) 
 df = df.append(df_excel)
-print(df)
 
-teste = df.groupby(df.Keyword).agg('count')
+###### Get All Keyords
+
+teste = df.groupby(['Keyword']).size()
 teste = teste.reset_index()
 teste.columns = ['Keyword', 'Count']
 
 teste = teste.sort_values(by=['Count'], ascending=False)
 
-teste.to_csv("/home/eduardo/teste.csv", index=False)
-print(teste)
+teste.to_csv("/home/eduardo/keywords.csv", index=False)
 teste = teste.head(10)
 
 teste.plot.bar(x='Keyword', y='Count', rot=0)
 plt.show()
+
+###### Get Keyords By Year
+
+teste = df.groupby(['Keyword', 'Year']).size()
+teste = teste.reset_index()
+teste.columns = ['Keyword', 'Year', 'Count']
+
+teste = teste.sort_values(by=['Count'], ascending=False)
+
+teste.to_csv("/home/eduardo/keywords_year.csv", index=False)
+teste = teste.head(10)
+
+teste.plot.bar(x='Keyword', y='Count', rot=0)
+plt.show()
+
+
+###### Get count authors 
 
 df = pd.DataFrame(author_year, columns = ['Author', 'Year']) 
 
@@ -125,6 +143,7 @@ teste = teste.head(10)
 teste.plot.bar(x='Author', y='Count', rot=0)
 plt.show()
 
+###### Get count authors 
 
 df = pd.DataFrame(reference_year, columns = ['Titulo', 'Conferencia']) 
 
