@@ -6,8 +6,27 @@ import sys
 import re
 import networkx as nx
 
+
+
 reload(sys)  
 sys.setdefaultencoding('utf8')
+
+def get_synonyms():
+    keywords = {}
+    with open("/home/eduardo/key_sigradi.csv") as f:
+        lis = [line.split(",") for line in f]        # create a list of lists
+        for i, x in enumerate(lis):              #print the list items 
+            first = ''
+            for i2, x2 in enumerate(x):   
+                if i2 == 0 and x2 != '':
+                    first = x2.strip().lower()
+                if i2 > 1 and x2 != '':
+                    keywords[x2.strip().lower()] = first
+    return keywords
+
+keywords = get_synonyms()
+print(keywords)
+
 
 url_ecc = "http://papers.cumincad.org/cgi-bin/works/Search?search=&paint=on&f%3A1=year&e%3A1=%3E%3D+x&v%3A1=1998&f%3A2=year&e%3A2=%3C%3D+x&v%3A2=2018&f%3A3=source&e%3A3=%3D~+m%2Fx%2Fi&v%3A3=eCAADe&f%3A4=&e%3A4=&v%3A4=&f%3A5=&e%3A5=&v%3A5=&grouping=and&days=&sort=DEFAULT&sort1=&sort2=&sort3=&max=3000&fields=id&fields=authors&fields=year&fields=title&fields=source&fields=summary&fields=WOS&fields=keywords&fields=series&fields=type&fields=email&fields=more&fields=content&fields=fullText&fields=references&fields=seeAlso&_form=AdvancedSearchForm&_formname=&format=LONG&frames=NONE"
 url_sigradi = "http://papers.cumincad.org/cgi-bin/works/Search?search=&paint=on&f%3A1=year&e%3A1=%3E%3D+x&v%3A1=1998&f%3A2=year&e%3A2=%3C%3D+x&v%3A2=2018&f%3A3=source&e%3A3=%3D~+m%2Fx%2Fi&v%3A3=sigradi&f%3A4=&e%3A4=&v%3A4=&f%3A5=&e%3A5=&v%3A5=&grouping=and&days=&sort=DEFAULT&sort1=&sort2=&sort3=&max=3000&fields=authors&fields=year&fields=title&fields=source&fields=keywords&fields=references&_form=AdvancedSearchForm&_formname=&format=LONG&frames=NONE"
@@ -46,6 +65,9 @@ for artist_name in items:
         kws = data.contents[0].replace(',',';').replace('/',';').split(';') 
         for k in kws:
             if k != '':
+                if k.strip().lower() in keywords:
+                    k = keywords[k.strip().lower()]
+
                 G.add_node(k)
                 keyword_year.append([k.strip().lower(), year])  
                 achou = False
@@ -117,6 +139,11 @@ lista = []
 for s in df_excel['keywords']:
     kws = s.replace(',',';').replace('/',';').split(';')  
     for k in kws:
+        if k.strip().lower() in keywords:
+            if 'reblock' in k:
+                continue
+        if k.strip().lower() in keywords:
+            k = keywords[k.strip().lower()]
         if k != '':
             lista.append([k.strip().lower(), "2018"])   
 
