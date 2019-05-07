@@ -72,7 +72,10 @@ for artist_name in items:
                 keyword_year.append([k.strip().lower(), year])  
                 achou = False
                 for k2 in kws:
+                    if k2.strip().lower() in keywords:
+                        k2 = keywords[k2.strip().lower()]
                     if (k == k2):
+                        
                         achou = True
                     if achou == True and k != k2:
                         p1 = k.strip().lower()
@@ -83,8 +86,7 @@ for artist_name in items:
                             G[p2][p1]['weight'] += 1
                         else:
                             G.add_edge(p1, p2, weight=1)
-                 
-        
+                         
     if header.contents[0] == 'references':
         title_year.append([title, year])
         for a in authors:
@@ -117,6 +119,19 @@ for u,v,a in G.edges(data=True):
 df = pd.DataFrame(related_keywords, columns = ['k1', 'k2', 'count']) 
 df = df.sort_values(by=['count'], ascending=False)
 df.to_csv("/home/eduardo/keywords_count.csv", index=False)
+
+
+G = nx.Graph()
+for index, row in df.head(21).iterrows():
+    G.add_node(row['k1'])
+    G.add_node(row['k2'])
+    G.add_edge(row['k1'], row['k2'], weight=row['count'] / 2)
+
+pos = nx.circular_layout(G)
+weights = [G[u][v]['weight'] for u,v in G.edges()]
+nx.draw_networkx(G, pos=pos)
+nx.draw_networkx_edges(G,pos,width=weights, edge_color='g', arrows=False)
+plt.show()
 
 ###### get number of papers by year
 
