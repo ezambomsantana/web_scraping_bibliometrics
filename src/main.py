@@ -15,7 +15,9 @@ def get_synonyms():
         lis = [line.split(",") for line in f]        # create a list of lists
         for i, x in enumerate(lis):              #print the list items 
             first = ''
-            for i2, x2 in enumerate(x):   
+            for i2, x2 in enumerate(x):  
+                if x2.strip().lower() == '':
+                    continue 
                 if i2 == 0 and x2 != '':
                     first = x2.strip().lower()
                 if i2 > 1 and x2 != '':
@@ -124,10 +126,6 @@ for a in lista:
 G = nx.Graph()
 for index, row in df.iterrows():
 
-    print('----')
-    print(row['k1'])
-    print(row['k2'])
-    print(row['k1'] in lista or row['k2'] in lista)
     if row['k1'] in lista or row['k2'] in lista:
         if row['k1'] in conta:
             if conta[row['k1']] >= 4:
