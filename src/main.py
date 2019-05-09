@@ -6,8 +6,6 @@ import sys
 import re
 import networkx as nx
 
-
-
 reload(sys)  
 sys.setdefaultencoding('utf8')
 
@@ -25,8 +23,6 @@ def get_synonyms():
     return keywords
 
 keywords = get_synonyms()
-print(keywords)
-
 
 url_ecc = "http://papers.cumincad.org/cgi-bin/works/Search?search=&paint=on&f%3A1=year&e%3A1=%3E%3D+x&v%3A1=1998&f%3A2=year&e%3A2=%3C%3D+x&v%3A2=2018&f%3A3=source&e%3A3=%3D~+m%2Fx%2Fi&v%3A3=eCAADe&f%3A4=&e%3A4=&v%3A4=&f%3A5=&e%3A5=&v%3A5=&grouping=and&days=&sort=DEFAULT&sort1=&sort2=&sort3=&max=3000&fields=id&fields=authors&fields=year&fields=title&fields=source&fields=summary&fields=WOS&fields=keywords&fields=series&fields=type&fields=email&fields=more&fields=content&fields=fullText&fields=references&fields=seeAlso&_form=AdvancedSearchForm&_formname=&format=LONG&frames=NONE"
 url_sigradi = "http://papers.cumincad.org/cgi-bin/works/Search?search=&paint=on&f%3A1=year&e%3A1=%3E%3D+x&v%3A1=1998&f%3A2=year&e%3A2=%3C%3D+x&v%3A2=2018&f%3A3=source&e%3A3=%3D~+m%2Fx%2Fi&v%3A3=sigradi&f%3A4=&e%3A4=&v%3A4=&f%3A5=&e%3A5=&v%3A5=&grouping=and&days=&sort=DEFAULT&sort1=&sort2=&sort3=&max=3000&fields=authors&fields=year&fields=title&fields=source&fields=keywords&fields=references&_form=AdvancedSearchForm&_formname=&format=LONG&frames=NONE"
@@ -115,17 +111,44 @@ related_keywords = []
 for u,v,a in G.edges(data=True):
     related_keywords.append([u,v,a['weight']])
 
-
 df = pd.DataFrame(related_keywords, columns = ['k1', 'k2', 'count']) 
 df = df.sort_values(by=['count'], ascending=False)
 df.to_csv("/home/eduardo/keywords_count.csv", index=False)
 
+lista = ["parametric design", "digital fabrication", "bim", "architecture", "design", "heritage", "design process", "architectural design", "shape grammar", "virtual reality"]
+conta = {}
+
+for a in lista:
+    conta[a] = 0
 
 G = nx.Graph()
-for index, row in df.head(21).iterrows():
-    G.add_node(row['k1'])
-    G.add_node(row['k2'])
-    G.add_edge(row['k1'], row['k2'], weight=row['count'] / 2)
+for index, row in df.iterrows():
+
+    print('----')
+    print(row['k1'])
+    print(row['k2'])
+    print(row['k1'] in lista or row['k2'] in lista)
+    if row['k1'] in lista or row['k2'] in lista:
+        if row['k1'] in conta:
+            if conta[row['k1']] >= 4:
+                continue
+
+        if row['k2'] in conta:
+            if conta[row['k2']] >= 4:
+                continue
+
+        if row['k1'] in conta:
+            print(conta[row['k1']])
+            conta[row['k1']] = conta[row['k1']] + 1
+
+        if row['k2'] in conta:
+            print(conta[row['k2']])
+            conta[row['k2']] = conta[row['k2']] + 1
+
+        G.add_node(row['k1'])
+        G.add_node(row['k2'])
+        G.add_edge(row['k1'], row['k2'], weight=row['count'] / 2)
+
 
 pos = nx.circular_layout(G)
 weights = [G[u][v]['weight'] for u,v in G.edges()]
@@ -186,7 +209,7 @@ teste = df.groupby(['Keyword', 'Year']).size()
 teste = teste.reset_index()
 teste.columns = ['Keyword', 'Year', 'Count']
 
-teste = teste.sort_values(by=['Count'], ascending=False)
+teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
 
 teste.to_csv("/home/eduardo/keywords_year.csv", index=False)
 teste = teste.head(10)
