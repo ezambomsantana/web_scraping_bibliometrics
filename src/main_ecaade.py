@@ -11,9 +11,9 @@ sys.setdefaultencoding('utf8')
 
 def get_synonyms():
     keywords = {}
-    with open("/home/eduardo/key_sigradi.csv") as f:
-        lis = [line.split(",") for line in f]        # create a list of lists
-        for i, x in enumerate(lis):              #print the list items 
+    with open("/home/eduardo/key - eCAADe.csv") as f:
+        lis = [line.split(",") for line in f]       
+        for i, x in enumerate(lis):              
             first = ''
             for i2, x2 in enumerate(x):  
                 if x2.strip().lower() == '':
@@ -116,7 +116,7 @@ df = pd.DataFrame(related_keywords, columns = ['k1', 'k2', 'count'])
 df = df.sort_values(by=['count'], ascending=False)
 df.to_csv("/home/eduardo/keywords_count.csv", index=False)
 
-lista = ["parametric design", "digital fabrication", "bim", "architecture", "design", "heritage", "design process", "architectural design", "shape grammar", "virtual reality"]
+lista = ["parametric design", "digital fabrication", "bim", "collaborative design", "virtual reality", "urban design", "generative design", "shape grammars", "design process", "architecture"]
 conta = {}
 
 for a in lista:
@@ -164,30 +164,9 @@ teste.columns = ['Year', 'Count']
 #teste.plot.bar(x='Year', y='Count', rot=0)
 #plt.show()
 
-
-###### Read 2018 sigradi data
-
-df_excel = pd.read_excel('/home/eduardo/Downloads/SIGraDi2018_metadata.xls', sheetname='Papers Ordered by Tracks')
-df_excel = df_excel[['keywords']]
-
-lista = []
-for s in df_excel['keywords']:
-    kws = s.replace(',',';').replace('/',';').split(';')  
-    for k in kws:
-        if k.strip().lower() in keywords:
-            if 'reblock' in k:
-                continue
-        if k.strip().lower() in keywords:
-            k = keywords[k.strip().lower()]
-        if k != '':
-            lista.append([k.strip().lower(), "2018"])   
-
-df_excel = pd.DataFrame(lista, columns = ['Keyword', 'Year']) 
-df = pd.DataFrame(keyword_year, columns = ['Keyword', 'Year']) 
-df = df.append(df_excel)
-
 ###### Get All Keyords 
 
+df = pd.DataFrame(keyword_year, columns = ['Keyword', 'Year']) 
 teste = df.groupby(['Keyword']).size()
 teste = teste.reset_index()
 teste.columns = ['Keyword', 'Count']
@@ -208,8 +187,8 @@ teste.columns = ['Keyword', 'Year', 'Count']
 
 teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
 
-for x in range(1999, 2018):
-    teste[teste['Year'] == x].to_csv("/home/eduardo/keywords/" + x + ".csv", index=False)
+for x in range(1999, 2019):
+    teste[teste['Year'] == str(x)].to_csv("/home/eduardo/keywords/" + str(x) + ".csv", index=False)
 
 teste = teste.head(10)
 teste.plot.bar(x='Keyword', y='Count', rot=0)
