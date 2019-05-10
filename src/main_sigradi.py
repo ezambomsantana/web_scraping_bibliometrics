@@ -209,7 +209,9 @@ teste.columns = ['Keyword', 'Year', 'Count']
 
 teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
 
-teste.to_csv("/home/eduardo/keywords_year.csv", index=False)
+for x in range(1999, 2019):
+    teste[teste['Year'] == str(x)].to_csv("/home/eduardo/keywords/" + str(x) + ".csv", index=False)
+
 teste = teste.head(10)
 
 teste.plot.bar(x='Keyword', y='Count', rot=0)
