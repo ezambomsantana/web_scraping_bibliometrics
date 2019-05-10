@@ -135,11 +135,9 @@ for index, row in df.iterrows():
                 continue
 
         if row['k1'] in conta:
-            print(conta[row['k1']])
             conta[row['k1']] = conta[row['k1']] + 1
 
         if row['k2'] in conta:
-            print(conta[row['k2']])
             conta[row['k2']] = conta[row['k2']] + 1
 
         G.add_node(row['k1'])

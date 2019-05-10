@@ -12,8 +12,8 @@ sys.setdefaultencoding('utf8')
 def get_synonyms():
     keywords = {}
     with open("/home/eduardo/key_sigradi.csv") as f:
-        lis = [line.split(",") for line in f]        # create a list of lists
-        for i, x in enumerate(lis):              #print the list items 
+        lis = [line.split(",") for line in f]     
+        for i, x in enumerate(lis):            
             first = ''
             for i2, x2 in enumerate(x):  
                 if x2.strip().lower() == '':
@@ -135,11 +135,9 @@ for index, row in df.iterrows():
                 continue
 
         if row['k1'] in conta:
-            print(conta[row['k1']])
             conta[row['k1']] = conta[row['k1']] + 1
 
         if row['k2'] in conta:
-            print(conta[row['k2']])
             conta[row['k2']] = conta[row['k2']] + 1
 
         G.add_node(row['k1'])
