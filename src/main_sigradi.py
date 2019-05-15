@@ -35,16 +35,24 @@ items = soup.find_all(class_='DATA')
 
 G = nx.Graph()
 
+lista = ["parametric design", "digital fabrication", "bim", "heritage", "design process", "architectural design", "shape grammar", "virtual reality",
+            "interaction", "cad"]
+
 reference_year = []
 author_year = []
 title_year = []
 keyword_year = []
 
+authors_ref = []
+
 authors = []
 title = ''
 year = 0
 
+achouKey = False
+
 for artist_name in items:
+
 
     header = artist_name.find("th")
     data = artist_name.find("td")
@@ -65,14 +73,16 @@ for artist_name in items:
                 if k.strip().lower() in keywords:
                     k = keywords[k.strip().lower()]
 
+                if k in lista:
+                    achouKey = True
+
                 G.add_node(k)
                 keyword_year.append([k.strip().lower(), year])  
                 achou = False
                 for k2 in kws:
                     if k2.strip().lower() in keywords:
                         k2 = keywords[k2.strip().lower()]
-                    if (k == k2):
-                        
+                    if (k == k2):                        
                         achou = True
                     if achou == True and k != k2:
                         p1 = k.strip().lower()
@@ -88,10 +98,22 @@ for artist_name in items:
         title_year.append([title, year])
         for a in authors:
             author_year.append([a.strip().lower(), year])  
+        if achouKey:            
+            if autores != '':
+                autores = autores.split('(')[0]
+                if autores != '':
+                    kws = autores.replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
+                    for k in kws:
+                        if k.strip().lower() != '':
+                            authors_ref.append([k.strip().lower(), year])  
+            achouKey = False
+
         title = ''
         year = 0
         authors = [];
         refs = data.find_all(width="100%")
+
+        autores = ""
         
         for ref in refs:
             try:
@@ -101,6 +123,10 @@ for artist_name in items:
                 reference_year.append([titulo.strip().lower(), conferencia.strip().lower()])  
             except:
                 print("An exception occurred")
+
+
+df = pd.DataFrame(authors_ref, columns = ['author', 'year']) 
+df.to_csv("/home/eduardo/authors_sigradi.csv", index=False)
 
 pos = nx.circular_layout(G)
 weights = [G[u][v]['weight'] * 4 for u,v in G.edges()]
