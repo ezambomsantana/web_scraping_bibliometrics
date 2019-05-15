@@ -30,7 +30,6 @@ url_sigradi = "http://papers.cumincad.org/cgi-bin/works/Search?search=&paint=on&
 page = requests.get(url_sigradi)
 
 soup = BeautifulSoup(page.text, 'html.parser')
-
 items = soup.find_all(class_='DATA')
 
 G = nx.Graph()
@@ -51,11 +50,10 @@ year = 0
 
 achouKey = False
 
-for artist_name in items:
+for paper in items:
 
-
-    header = artist_name.find("th")
-    data = artist_name.find("td")
+    header = paper.find("th")
+    data = paper.find("td")
 
     if header.contents[0] == 'authors':
         authors = data.contents[0].split(';') 
@@ -73,7 +71,7 @@ for artist_name in items:
                 if k.strip().lower() in keywords:
                     k = keywords[k.strip().lower()]
 
-                if k in lista:
+                if k.strip().lower() in lista:
                     achouKey = True
 
                 G.add_node(k)
@@ -98,19 +96,8 @@ for artist_name in items:
         title_year.append([title, year])
         for a in authors:
             author_year.append([a.strip().lower(), year])  
-        if achouKey:            
-            if autores != '':
-                autores = autores.split('(')[0]
-                if autores != '':
-                    kws = autores.replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
-                    for k in kws:
-                        if k.strip().lower() != '':
-                            authors_ref.append([k.strip().lower(), year])  
-            achouKey = False
 
-        title = ''
-        year = 0
-        authors = [];
+
         refs = data.find_all(width="100%")
 
         autores = ""
@@ -124,9 +111,30 @@ for artist_name in items:
             except:
                 print("An exception occurred")
 
+        if achouKey:            
+            if autores != '':
+                autores = autores.split('(')[0]
+                if autores != '':
+                    kws = autores.replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
+                    for k in kws:
+                        if k.strip().lower() != '':
+                            authors_ref.append([k.strip().lower(), year])  
+            achouKey = False     
+
+        title = ''
+        year = 0
+        authors = []                       
 
 df = pd.DataFrame(authors_ref, columns = ['author', 'year']) 
-df.to_csv("/home/eduardo/authors_sigradi.csv", index=False)
+teste = df.groupby(['author', 'year']).size()
+teste = teste.reset_index()
+teste.columns = ['Author', 'Year', 'Count']
+
+teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
+
+for x in range(1999, 2019):
+    teste[teste['Year'] == str(x)].to_csv("/home/eduardo/authors/" + str(x) + ".csv", index=False)
+
 
 pos = nx.circular_layout(G)
 weights = [G[u][v]['weight'] * 4 for u,v in G.edges()]

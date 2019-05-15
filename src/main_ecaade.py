@@ -40,9 +40,15 @@ author_year = []
 title_year = []
 keyword_year = []
 
+authors_ref = []
+
 authors = []
 title = ''
 year = 0
+
+lista = ["parametric design", "digital fabrication", "bim", "collaborative design", "virtual reality", "urban design", "generative design", "shape grammars", "design process", "simulation"]
+
+achouKey = False
 
 for artist_name in items:
 
@@ -65,33 +71,34 @@ for artist_name in items:
                 if k.strip().lower() in keywords:
                     k = keywords[k.strip().lower()]
 
-                G.add_node(k)
-                keyword_year.append([k.strip().lower(), year])  
-                achou = False
-                for k2 in kws:
-                    if k2.strip().lower() in keywords:
-                        k2 = keywords[k2.strip().lower()]
-                    if (k == k2):
-                        
-                        achou = True
-                    if achou == True and k != k2:
-                        p1 = k.strip().lower()
-                        p2 = k2.strip().lower()
-                        if G.has_edge(p1, p2):
-                            G[p1][p2]['weight'] += 1
-                        elif G.has_edge(p2, p1):
-                            G[p2][p1]['weight'] += 1
-                        else:
-                            G.add_edge(p1, p2, weight=1)
+                if k.strip().lower() in lista:
+                    achouKey = True
+
+#                G.add_node(k)
+#                keyword_year.append([k.strip().lower(), year])  
+#                achou = False
+#                for k2 in kws:
+#                    if k2.strip().lower() in keywords:
+#                        k2 = keywords[k2.strip().lower()]
+#                    if (k == k2):
+#                        
+#                        achou = True
+#                    if achou == True and k != k2:
+#                        p1 = k.strip().lower()
+#                        p2 = k2.strip().lower()
+#                        if G.has_edge(p1, p2):
+#                            G[p1][p2]['weight'] += 1
+#                        elif G.has_edge(p2, p1):
+#                            G[p2][p1]['weight'] += 1
+#                        else:
+#                            G.add_edge(p1, p2, weight=1)
                          
     if header.contents[0] == 'references':
         title_year.append([title, year])
         for a in authors:
             author_year.append([a.strip().lower(), year])  
-        title = ''
-        year = 0
-        authors = [];
-        refs = data.find_all(width="100%")
+        
+        refs = data.find_all(width="100%")    
         
         for ref in refs:
             try:
@@ -101,6 +108,33 @@ for artist_name in items:
                 reference_year.append([titulo.strip().lower(), conferencia.strip().lower()])  
             except:
                 print("An exception occurred")
+
+        if achouKey:         
+            if autores != '':
+                autores = autores.split('(')[0]
+                if autores != '':
+                    kws = autores.replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
+                    for k in kws:
+                        print(k)   
+                        if k.strip().lower() != '':
+                            authors_ref.append([k.strip().lower(), year])  
+            achouKey = False          
+            
+        title = ''
+        year = 0
+        authors = []      
+
+df = pd.DataFrame(authors_ref, columns = ['author', 'year']) 
+teste = df.groupby(['author', 'year']).size()
+teste = teste.reset_index()
+teste.columns = ['Author', 'Year', 'Count']
+
+teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
+
+print(teste)
+
+for x in range(1999, 2019):
+    teste[teste['Year'] == str(x)].to_csv("/home/eduardo/authors/" + str(x) + ".csv", index=False)                
 
 pos = nx.circular_layout(G)
 weights = [G[u][v]['weight'] * 4 for u,v in G.edges()]
