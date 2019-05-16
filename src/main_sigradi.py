@@ -6,12 +6,9 @@ import sys
 import re
 import networkx as nx
 
-reload(sys)  
-sys.setdefaultencoding('utf8')
-
 def get_synonyms():
     keywords = {}
-    with open("/home/eduardo/key_sigradi.csv") as f:
+    with open("/Users/eduardosantana/pesquisa/key_sigradi.csv") as f:
         lis = [line.split(",") for line in f]     
         for i, x in enumerate(lis):            
             first = ''
@@ -41,6 +38,7 @@ reference_year = []
 author_year = []
 title_year = []
 keyword_year = []
+conf_year = []
 
 authors_ref = []
 
@@ -48,7 +46,7 @@ authors = []
 title = ''
 year = 0
 
-achouKey = False
+keys = []
 
 for paper in items:
 
@@ -72,7 +70,7 @@ for paper in items:
                     k = keywords[k.strip().lower()]
 
                 if k.strip().lower() in lista:
-                    achouKey = True
+                    keys.append(k.strip().lower())
 
                 G.add_node(k)
                 keyword_year.append([k.strip().lower(), year])  
@@ -104,36 +102,46 @@ for paper in items:
         
         for ref in refs:
             try:
+
                 autores = ref.contents[0].strip().rstrip("\n\r")
                 titulo = ref.contents[1].get_text().strip().rstrip("\n\r")
                 conferencia = ref.contents[2].strip().rstrip("\n\r").replace(", ", "")
+
+                if 'ecaade' in conferencia.lower():
+                    conf_year.append(['ecaade', year])
                 reference_year.append([titulo.strip().lower(), conferencia.strip().lower()])  
             except:
                 print("An exception occurred")
 
-        if achouKey:            
+        if len(keys) > 0:            
             if autores != '':
                 autores = autores.split('(')[0]
                 if autores != '':
-                    kws = autores.replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
+                    kws = autores.replace(' y ',';').replace(' e ',';').replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
                     for k in kws:
                         if k.strip().lower() != '':
-                            authors_ref.append([k.strip().lower(), year])  
-            achouKey = False     
+                            for key in keys:
+                                authors_ref.append([k.strip().lower(), key, year])  
+            keys = []     
 
         title = ''
         year = 0
         authors = []                       
 
-df = pd.DataFrame(authors_ref, columns = ['author', 'year']) 
-teste = df.groupby(['author', 'year']).size()
+print(conf_year)
+df = pd.DataFrame(conf_year, columns = ['k1', 'year']) 
+df = df.groupby(['k1','year']).size()
+print(df)
+
+df = pd.DataFrame(authors_ref, columns = ['author', 'key', 'year']) 
+teste = df.groupby(['author', 'key', 'year']).size()
 teste = teste.reset_index()
-teste.columns = ['Author', 'Year', 'Count']
+teste.columns = ['Author', 'Key', 'Year', 'Count']
 
 teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
 
 for x in range(1999, 2019):
-    teste[teste['Year'] == str(x)].to_csv("/home/eduardo/authors/" + str(x) + ".csv", index=False)
+    teste[teste['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/authors_" + str(x) + ".csv", index=False)
 
 
 pos = nx.circular_layout(G)
@@ -199,7 +207,7 @@ teste.columns = ['Year', 'Count']
 
 ###### Read 2018 sigradi data
 
-df_excel = pd.read_excel('/home/eduardo/Downloads/SIGraDi2018_metadata.xls', sheetname='Papers Ordered by Tracks')
+df_excel = pd.read_excel('/Users/eduardosantana/pesquisa/SIGraDi2018_metadata.xls', sheetname='Papers Ordered by Tracks')
 df_excel = df_excel[['keywords']]
 
 lista = []
@@ -241,7 +249,7 @@ teste.columns = ['Keyword', 'Year', 'Count']
 teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
 
 for x in range(1999, 2019):
-    teste[teste['Year'] == str(x)].to_csv("/home/eduardo/keywords/" + str(x) + ".csv", index=False)
+    teste[teste['Year'] == str(x)].to_csv("/Users/eduardosantana/keywords_" + str(x) + ".csv", index=False)
 
 teste = teste.head(10)
 

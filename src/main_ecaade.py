@@ -6,12 +6,9 @@ import sys
 import re
 import networkx as nx
 
-reload(sys)  
-sys.setdefaultencoding('utf8')
-
 def get_synonyms():
     keywords = {}
-    with open("/home/eduardo/key - eCAADe.csv") as f:
+    with open("/Users/eduardosantana/pesquisa/key - eCAADe.csv") as f:
         lis = [line.split(",") for line in f]       
         for i, x in enumerate(lis):              
             first = ''
@@ -39,6 +36,7 @@ reference_year = []
 author_year = []
 title_year = []
 keyword_year = []
+conf_year = []
 
 authors_ref = []
 
@@ -48,7 +46,7 @@ year = 0
 
 lista = ["parametric design", "digital fabrication", "bim", "collaborative design", "virtual reality", "urban design", "generative design", "shape grammars", "design process", "simulation"]
 
-achouKey = False
+keys = []
 
 for artist_name in items:
 
@@ -72,7 +70,7 @@ for artist_name in items:
                     k = keywords[k.strip().lower()]
 
                 if k.strip().lower() in lista:
-                    achouKey = True
+                    keys.append(k.strip().lower())
 
 #                G.add_node(k)
 #                keyword_year.append([k.strip().lower(), year])  
@@ -105,36 +103,43 @@ for artist_name in items:
                 autores = ref.contents[0].strip().rstrip("\n\r")
                 titulo = ref.contents[1].get_text().strip().rstrip("\n\r")
                 conferencia = ref.contents[2].strip().rstrip("\n\r").replace(", ", "")
+
+                if 'sigradi' in conferencia.lower():
+                    conf_year.append(['ecaade', year])
+
                 reference_year.append([titulo.strip().lower(), conferencia.strip().lower()])  
             except:
                 print("An exception occurred")
 
-        if achouKey:         
+        if len(keys) > 0:         
             if autores != '':
                 autores = autores.split('(')[0]
                 if autores != '':
                     kws = autores.replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
                     for k in kws:
-                        print(k)   
                         if k.strip().lower() != '':
-                            authors_ref.append([k.strip().lower(), year])  
-            achouKey = False          
+                            for key in keys:
+                                authors_ref.append([k.strip().lower(), key, year])  
+            keys = []            
             
         title = ''
         year = 0
         authors = []      
 
-df = pd.DataFrame(authors_ref, columns = ['author', 'year']) 
-teste = df.groupby(['author', 'year']).size()
+print(conf_year)
+df = pd.DataFrame(conf_year, columns = ['k1', 'year']) 
+df = df.groupby(['k1','year']).size()
+print(df)
+
+df = pd.DataFrame(authors_ref, columns = ['author', 'key', 'year']) 
+teste = df.groupby(['author', 'key', 'year']).size()
 teste = teste.reset_index()
-teste.columns = ['Author', 'Year', 'Count']
+teste.columns = ['Author', 'Key', 'Year', 'Count']
 
 teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
 
-print(teste)
-
 for x in range(1999, 2019):
-    teste[teste['Year'] == str(x)].to_csv("/home/eduardo/authors/" + str(x) + ".csv", index=False)                
+    teste[teste['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/authors_" + str(x) + ".csv", index=False)            
 
 pos = nx.circular_layout(G)
 weights = [G[u][v]['weight'] * 4 for u,v in G.edges()]
