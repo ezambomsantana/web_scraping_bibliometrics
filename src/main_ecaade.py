@@ -104,23 +104,26 @@ for artist_name in items:
                 titulo = ref.contents[1].get_text().strip().rstrip("\n\r")
                 conferencia = ref.contents[2].strip().rstrip("\n\r").replace(", ", "")
 
+                if len(keys) > 0:            
+                    if autores != '':
+                        print(autores)
+                        autores = autores.split('(')[0]
+                        if autores != '':
+                            kws = autores.replace(' y ',';').replace(' e ',';').replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
+                            for k in kws:
+                                print(k)
+                                if k.strip().lower() != '':
+                                    for key in keys:
+                                        authors_ref.append([k.strip().lower(), key, year])  
+
                 if 'sigradi' in conferencia.lower():
-                    conf_year.append(['ecaade', year])
+                    conf_year.append(['sigradi', year])
 
                 reference_year.append([titulo.strip().lower(), conferencia.strip().lower()])  
             except:
                 print("An exception occurred")
 
-        if len(keys) > 0:         
-            if autores != '':
-                autores = autores.split('(')[0]
-                if autores != '':
-                    kws = autores.replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
-                    for k in kws:
-                        if k.strip().lower() != '':
-                            for key in keys:
-                                authors_ref.append([k.strip().lower(), key, year])  
-            keys = []            
+        keys = []            
             
         title = ''
         year = 0
@@ -129,7 +132,10 @@ for artist_name in items:
 print(conf_year)
 df = pd.DataFrame(conf_year, columns = ['k1', 'year']) 
 df = df.groupby(['k1','year']).size()
-print(df)
+df = df.reset_index()
+df.columns = ['Key', 'Year', 'Count']
+df.to_csv("/Users/eduardosantana/pesquisa/num_ecaade_sigradi.csv", index=False)
+
 
 df = pd.DataFrame(authors_ref, columns = ['author', 'key', 'year']) 
 teste = df.groupby(['author', 'key', 'year']).size()
@@ -139,7 +145,7 @@ teste.columns = ['Author', 'Key', 'Year', 'Count']
 teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
 
 for x in range(1999, 2019):
-    teste[teste['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/authors_" + str(x) + ".csv", index=False)            
+    teste[teste['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/ecaade_authors_" + str(x) + ".csv", index=False)            
 
 pos = nx.circular_layout(G)
 weights = [G[u][v]['weight'] * 4 for u,v in G.edges()]

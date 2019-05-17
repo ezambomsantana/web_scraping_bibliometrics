@@ -23,7 +23,9 @@ def get_synonyms():
 
 keywords = get_synonyms()
 
-url_sigradi = "http://papers.cumincad.org/cgi-bin/works/Search?search=&paint=on&f%3A1=year&e%3A1=%3E%3D+x&v%3A1=1998&f%3A2=year&e%3A2=%3C%3D+x&v%3A2=2018&f%3A3=source&e%3A3=%3D~+m%2Fx%2Fi&v%3A3=sigradi&f%3A4=&e%3A4=&v%3A4=&f%3A5=&e%3A5=&v%3A5=&grouping=and&days=&sort=DEFAULT&sort1=&sort2=&sort3=&max=3000&fields=authors&fields=year&fields=title&fields=source&fields=keywords&fields=references&_form=AdvancedSearchForm&_formname=&format=LONG&frames=NONE"
+print(keywords)
+
+url_sigradi = "http://papers.cumincad.org/cgi-bin/works/Search?search=&paint=on&f%3A1=year&e%3A1=%3E%3D+x&v%3A1=1998&f%3A2=year&e%3A2=%3C%3D+x&v%3A2=2019&f%3A3=source&e%3A3=%3D~+m%2Fx%2Fi&v%3A3=sigradi&f%3A4=&e%3A4=&v%3A4=&f%3A5=&e%3A5=&v%3A5=&grouping=and&days=&sort=DEFAULT&sort1=&sort2=&sort3=&max=3000&fields=authors&fields=year&fields=title&fields=source&fields=keywords&fields=references&_form=AdvancedSearchForm&_formname=&format=LONG&frames=NONE"
 page = requests.get(url_sigradi)
 
 soup = BeautifulSoup(page.text, 'html.parser')
@@ -31,8 +33,7 @@ items = soup.find_all(class_='DATA')
 
 G = nx.Graph()
 
-lista = ["parametric design", "digital fabrication", "bim", "heritage", "design process", "architectural design", "shape grammar", "virtual reality",
-            "interaction", "cad"]
+lista = ["parametric design", "digital fabrication", "bim", "heritage", "design process"]
 
 reference_year = []
 author_year = []
@@ -100,6 +101,7 @@ for paper in items:
 
         autores = ""
         
+        print(title)
         for ref in refs:
             try:
 
@@ -107,31 +109,35 @@ for paper in items:
                 titulo = ref.contents[1].get_text().strip().rstrip("\n\r")
                 conferencia = ref.contents[2].strip().rstrip("\n\r").replace(", ", "")
 
+                if len(keys) > 0:            
+                    if autores != '':
+                        print(autores)
+                        autores = autores.split('(')[0]
+                        if autores != '':
+                            kws = autores.replace(' y ',';').replace(' e ',';').replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
+                            for k in kws:
+                                print(k)
+                                if k.strip().lower() != '':
+                                    for key in keys:
+                                        authors_ref.append([k.strip().lower(), key, year])  
+                    
+
                 if 'ecaade' in conferencia.lower():
                     conf_year.append(['ecaade', year])
                 reference_year.append([titulo.strip().lower(), conferencia.strip().lower()])  
             except:
                 print("An exception occurred")
-
-        if len(keys) > 0:            
-            if autores != '':
-                autores = autores.split('(')[0]
-                if autores != '':
-                    kws = autores.replace(' y ',';').replace(' e ',';').replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
-                    for k in kws:
-                        if k.strip().lower() != '':
-                            for key in keys:
-                                authors_ref.append([k.strip().lower(), key, year])  
-            keys = []     
-
+ 
+        keys = []    
         title = ''
         year = 0
         authors = []                       
 
-print(conf_year)
 df = pd.DataFrame(conf_year, columns = ['k1', 'year']) 
 df = df.groupby(['k1','year']).size()
-print(df)
+df = df.reset_index()
+df.columns = ['Key', 'Year', 'Count']
+df.to_csv("/Users/eduardosantana/pesquisa/num_sigradi_ecaade.csv", index=False)
 
 df = pd.DataFrame(authors_ref, columns = ['author', 'key', 'year']) 
 teste = df.groupby(['author', 'key', 'year']).size()
@@ -141,7 +147,8 @@ teste.columns = ['Author', 'Key', 'Year', 'Count']
 teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
 
 for x in range(1999, 2019):
-    teste[teste['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/authors_" + str(x) + ".csv", index=False)
+    for y in lista:
+        teste[teste['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/sigradi/" + y + "sigradi_authors_" + str(x) + ".csv", index=False)
 
 
 pos = nx.circular_layout(G)
