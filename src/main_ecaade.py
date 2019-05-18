@@ -44,7 +44,7 @@ authors = []
 title = ''
 year = 0
 
-lista = ["parametric design", "digital fabrication", "bim", "collaborative design", "virtual reality", "urban design", "generative design", "shape grammars", "design process", "simulation"]
+lista = ["parametric design", "digital fabrication", "bim", "collaborative design", "virtual reality"]
 
 keys = []
 
@@ -145,7 +145,9 @@ teste.columns = ['Author', 'Key', 'Year', 'Count']
 teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
 
 for x in range(1999, 2019):
-    teste[teste['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/ecaade_authors_" + str(x) + ".csv", index=False)            
+    for y in lista:
+        teste2 = teste[teste['Key'] == y]
+        teste2[teste2['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/ecaade/" + y + "_ecaade_authors_" + str(x) + ".csv", index=False)
 
 pos = nx.circular_layout(G)
 weights = [G[u][v]['weight'] * 4 for u,v in G.edges()]
@@ -231,7 +233,7 @@ teste.columns = ['Keyword', 'Year', 'Count']
 teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
 
 for x in range(1999, 2019):
-    teste[teste['Year'] == str(x)].to_csv("/home/eduardo/keywords/" + str(x) + ".csv", index=False)
+    teste[teste['Year'] == str(x)].to_csv("/home/eduardo/ecaade/" + str(x) + ".csv", index=False)
 
 teste = teste.head(10)
 teste.plot.bar(x='Keyword', y='Count', rot=0)

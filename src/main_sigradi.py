@@ -144,12 +144,12 @@ teste = df.groupby(['author', 'key', 'year']).size()
 teste = teste.reset_index()
 teste.columns = ['Author', 'Key', 'Year', 'Count']
 
-teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
+teste = teste.sort_values(by=['Author'], ascending=True)
 
 for x in range(1999, 2019):
     for y in lista:
-        teste[teste['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/sigradi/" + y + "sigradi_authors_" + str(x) + ".csv", index=False)
-
+        teste2 = teste[teste['Key'] == y]
+        teste2[teste2['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/sigradi/" + y + "_sigradi_authors_" + str(x) + ".csv", index=False)
 
 pos = nx.circular_layout(G)
 weights = [G[u][v]['weight'] * 4 for u,v in G.edges()]
