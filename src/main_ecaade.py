@@ -142,7 +142,7 @@ teste = df.groupby(['author', 'key', 'year']).size()
 teste = teste.reset_index()
 teste.columns = ['Author', 'Key', 'Year', 'Count']
 
-teste = teste.sort_values(by=['Year', 'Count'], ascending=False)
+teste = teste.sort_values(by=['Author'], ascending=True)
 
 for x in range(1999, 2019):
     for y in lista:
