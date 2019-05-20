@@ -33,8 +33,6 @@ items = soup.find_all(class_='DATA')
 
 G = nx.Graph()
 
-lista = ["parametric design", "digital fabrication", "bim", "heritage", "design process"]
-
 reference_year = []
 author_year = []
 title_year = []
@@ -70,8 +68,7 @@ for paper in items:
                 if k.strip().lower() in keywords:
                     k = keywords[k.strip().lower()]
 
-                if k.strip().lower() in lista:
-                    keys.append(k.strip().lower())
+                keys.append(k.strip().lower())
 
                 G.add_node(k)
                 keyword_year.append([k.strip().lower(), year])  
@@ -108,18 +105,15 @@ for paper in items:
                 autores = ref.contents[0].strip().rstrip("\n\r")
                 titulo = ref.contents[1].get_text().strip().rstrip("\n\r")
                 conferencia = ref.contents[2].strip().rstrip("\n\r").replace(", ", "")
-
-                if len(keys) > 0:            
+          
+                if autores != '':
+                    autores = autores.split('(')[0]
                     if autores != '':
-                        print(autores)
-                        autores = autores.split('(')[0]
-                        if autores != '':
-                            kws = autores.replace(' y ',';').replace(' e ',';').replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
-                            for k in kws:
-                                print(k)
-                                if k.strip().lower() != '':
-                                    for key in keys:
-                                        authors_ref.append([k.strip().lower(), key, year])  
+                        kws = autores.replace(' y ',';').replace(' e ',';').replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
+                        for k in kws:
+                            if k.strip().lower() != '':
+                                for key in keys:
+                                    authors_ref.append([k.strip().lower(), key, year])  
                     
 
                 if 'ecaade' in conferencia.lower():
@@ -146,16 +140,23 @@ teste.columns = ['Author', 'Key', 'Year', 'Count']
 
 teste = teste.sort_values(by=['Author'], ascending=True)
 
+df = pd.DataFrame(keyword_year, columns = ['Keyword', 'Year']) 
+keys = df.groupby(['Keyword', 'Year']).size()
+keys = keys.reset_index()
+keys.columns = ['Keyword', 'Year', 'Count']
+
+print(teste)
+
+keys = keys.sort_values(by=['Year', 'Count'], ascending=False)
 for x in range(1999, 2019):
-    for y in lista:
+    keys_year = keys[keys['Year'] == str(x)]
+    keys_year = keys_year[~keys_year['Keyword'].isin(['architecture', 'design', 'education'])]
+    for y in keys_year['Keyword'].head(5):
         teste2 = teste[teste['Key'] == y]
-        teste2[teste2['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/sigradi/" + y + "_sigradi_authors_" + str(x) + ".csv", index=False)
+        teste2[teste2['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/sigradi/" + str(x) + "_" + y + "_sigradi_authors_" + ".csv", index=False)
 
 pos = nx.circular_layout(G)
 weights = [G[u][v]['weight'] * 4 for u,v in G.edges()]
-#nx.draw_networkx(G, pos=pos)
-#nx.draw_networkx_edges(G,pos,width=weights, edge_color='g', arrows=False)
-#lt.show()
 
 related_keywords = []
 for u,v,a in G.edges(data=True):
@@ -163,7 +164,7 @@ for u,v,a in G.edges(data=True):
 
 df = pd.DataFrame(related_keywords, columns = ['k1', 'k2', 'count']) 
 df = df.sort_values(by=['count'], ascending=False)
-df.to_csv("/home/eduardo/keywords_count.csv", index=False)
+df.to_csv("/Users/eduardosantana/pesquisa/keywords_count.csv", index=False)
 
 lista = ["parametric design", "digital fabrication", "bim", "architecture", "design", "heritage", "design process", "architectural design", "shape grammar", "virtual reality"]
 conta = {}
@@ -200,17 +201,6 @@ nx.draw_networkx(G, pos=pos)
 nx.draw_networkx_edges(G,pos,width=weights, edge_color='g', arrows=False)
 plt.show()
 
-###### get number of papers by year
-
-df = pd.DataFrame(title_year, columns = ['Title', 'Year']) 
-
-teste = df.groupby(df.Year).agg('count')
-teste = teste.reset_index()
-teste.columns = ['Year', 'Count']
-
-#teste.plot.bar(x='Year', y='Count', rot=0)
-#plt.show()
-
 
 ###### Read 2018 sigradi data
 
@@ -242,13 +232,10 @@ teste.columns = ['Keyword', 'Count']
 teste = teste.sort_values(by=['Count'], ascending=False)
 
 teste.to_csv("/home/eduardo/keywords.csv", index=False)
-teste = teste.head(10)
-
-teste.plot.bar(x='Keyword', y='Count', rot=0)
-plt.show()
 
 ###### Get Keyords By Year
 
+df = pd.DataFrame(keyword_year, columns = ['Keyword', 'Year']) 
 teste = df.groupby(['Keyword', 'Year']).size()
 teste = teste.reset_index()
 teste.columns = ['Keyword', 'Year', 'Count']

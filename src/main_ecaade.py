@@ -44,8 +44,6 @@ authors = []
 title = ''
 year = 0
 
-lista = ["parametric design", "digital fabrication", "bim", "collaborative design", "virtual reality"]
-
 keys = []
 
 for artist_name in items:
@@ -69,9 +67,8 @@ for artist_name in items:
                 if k.strip().lower() in keywords:
                     k = keywords[k.strip().lower()]
 
-                if k.strip().lower() in lista:
-                    keys.append(k.strip().lower())
-
+                keys.append(k.strip().lower())
+                keyword_year.append([k.strip().lower(), year])  
 #                G.add_node(k)
 #                keyword_year.append([k.strip().lower(), year])  
 #                achou = False
@@ -103,18 +100,16 @@ for artist_name in items:
                 autores = ref.contents[0].strip().rstrip("\n\r")
                 titulo = ref.contents[1].get_text().strip().rstrip("\n\r")
                 conferencia = ref.contents[2].strip().rstrip("\n\r").replace(", ", "")
-
-                if len(keys) > 0:            
+     
+                if autores != '':
+                    print(autores)
+                    autores = autores.split('(')[0]
                     if autores != '':
-                        print(autores)
-                        autores = autores.split('(')[0]
-                        if autores != '':
-                            kws = autores.replace(' y ',';').replace(' e ',';').replace(' and ',';').replace('., ',';').replace('&',';').split(';') 
-                            for k in kws:
-                                print(k)
-                                if k.strip().lower() != '':
-                                    for key in keys:
-                                        authors_ref.append([k.strip().lower(), key, year])  
+                        kws = autores.replace(' y ',';').replace(' e ',';').replace(' and ',';').replace('., ',';').replace('&',';').split(';')                             
+                        for k in kws:
+                            if k.strip().lower() != '':
+                                for key in keys:
+                                    authors_ref.append([k.strip().lower(), key, year])  
 
                 if 'sigradi' in conferencia.lower():
                     conf_year.append(['sigradi', year])
@@ -144,10 +139,20 @@ teste.columns = ['Author', 'Key', 'Year', 'Count']
 
 teste = teste.sort_values(by=['Author'], ascending=True)
 
+df = pd.DataFrame(keyword_year, columns = ['Keyword', 'Year']) 
+keys = df.groupby(['Keyword', 'Year']).size()
+keys = keys.reset_index()
+keys.columns = ['Keyword', 'Year', 'Count']
+
+keys = keys.sort_values(by=['Year', 'Count'], ascending=False)
+print(keys)
 for x in range(1999, 2019):
-    for y in lista:
+    keys_year = keys[keys['Year'] == str(x)]
+    keys_year = keys_year[~keys_year['Keyword'].isin(['architecture', 'design', 'education'])]
+    for y in keys_year['Keyword'].head(5):
         teste2 = teste[teste['Key'] == y]
-        teste2[teste2['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/ecaade/" + y + "_ecaade_authors_" + str(x) + ".csv", index=False)
+        teste2[teste2['Year'] == str(x)].to_csv("/Users/eduardosantana/pesquisa/ecaade/" + str(x) + "_" + y + "_ecaade_authors_" + ".csv", index=False)
+
 
 pos = nx.circular_layout(G)
 weights = [G[u][v]['weight'] * 4 for u,v in G.edges()]
