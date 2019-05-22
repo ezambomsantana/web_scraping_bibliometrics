@@ -98,7 +98,7 @@ def authors_by_keywords(authors_ref, keyword_year, file):
             teste2 = teste[teste['Key'] == y]
             teste2[teste2['Year'] == str(x)].to_csv(file + str(x) + "_" + y + "_sigradi_authors_" + ".csv", index=False)
 
-def generate_network(G, lista):
+def generate_network(G, lista, folder):
     conta = {}
 
     for a in lista:
@@ -137,4 +137,4 @@ def generate_network(G, lista):
     nx.draw_networkx(G, pos=pos)
     nx.draw_networkx_edges(G,pos,width=weights, edge_color='g', arrows=False)
     plt.axis('off')
-    plt.show()
+    plt.savefig(folder + "Graph.svg", format="SVG")

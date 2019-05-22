@@ -90,7 +90,7 @@ for paper in f.get_page("http://papers.cumincad.org/cgi-bin/works/Search?search=
 
 lista = ["parametric design", "digital fabrication", "bim", "architecture", "design", "heritage", "design process", "architectural design", "shape grammar", "virtual reality"]
 
-f.generate_network(G, lista)
+f.generate_network(G, lista, folder)
 
 df = pd.DataFrame(keyword_year, columns = ['Keyword', 'Year']) 
 df = df.append(f.read_excel(folder, keywords))
