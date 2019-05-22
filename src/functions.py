@@ -108,7 +108,12 @@ def generate_network(G, lista, folder):
     for u,v,a in G.edges(data=True):
         related_keywords.append([u,v,a['weight']])
 
+
     df = pd.DataFrame(related_keywords, columns = ['k1', 'k2', 'count']) 
+    df = df.sort_values(by=['count'], ascending=False)
+    print(df.head(30))
+
+    color_map = []
 
     G = nx.Graph()
     for index, row in df.iterrows():
@@ -128,13 +133,27 @@ def generate_network(G, lista, folder):
             if row['k2'] in conta:
                 conta[row['k2']] = conta[row['k2']] + 1
 
-            G.add_node(row['k1'])
-            G.add_node(row['k2'])
+            if row['k1'] not in G:
+                G.add_node(row['k1'])
+
+                if row['k1'] in lista:
+                    color_map.append('red')
+                else:
+                    color_map.append('blue')
+
+            if row['k2'] not in G:
+                G.add_node(row['k2'])
+                if row['k2'] in lista:
+                    color_map.append('red')
+                else:
+                    color_map.append('blue')
+
             G.add_edge(row['k1'], row['k2'], weight=row['count'] / 2)
 
     pos = nx.circular_layout(G)
     weights = [G[u][v]['weight'] for u,v in G.edges()]
-    nx.draw_networkx(G, pos=pos)
+    nx.draw_networkx(G, node_color=color_map, pos=pos)
     nx.draw_networkx_edges(G,pos,width=weights, edge_color='g', arrows=False)
     plt.axis('off')
     plt.savefig(folder + "Graph.svg", format="SVG")
+    plt.show()

@@ -12,7 +12,6 @@ sys.setdefaultencoding('utf8')
 folder = "/home/eduardo/sigradi/"
 
 keywords = f.get_synonyms(folder + "key_sigradi.csv")
-print(keywords)
 
 G = nx.Graph()
 
@@ -39,8 +38,8 @@ for paper in f.get_page("http://papers.cumincad.org/cgi-bin/works/Search?search=
 
                 if k.strip().lower() != '':
                     keys.append(k.strip().lower())
-                    G.add_node(k.strip().lower())
                     keyword_year.append([k.strip().lower(), year])  
+                    G.add_node(k.strip().lower())
                     achou = False
                     for k2 in kws:
                         if k2.strip().lower() != '':
@@ -78,10 +77,6 @@ for paper in f.get_page("http://papers.cumincad.org/cgi-bin/works/Search?search=
                             if k.strip().lower() != '':
                                 for key in keys:
                                     authors_ref.append([k.strip().lower(), key, year])  
-                    
-
-                if 'ecaade' in conferencia.lower():
-                    conf_year.append(['ecaade', year])
             except:
                 print("An exception occurred")
  
